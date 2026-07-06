@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grow & Bloom — Ultimate Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+        *{margin:0;padding:0;box-sizing:border-box;}
+
+        :root{
+            --bg:#0a0a0f;
+            --bg2:#12121a;
+            --accent1:#22c55e;
+            --accent2:#f472b6;
+            --text:#f0f0f8;
+            --muted:#6b7280;
+            --pot1:#92400e;
+            --pot2:#b45309;
+            --pot3:#fbbf24;
+        }
+
+        body{
+            background:var(--bg);
+            color:var(--text);
+            font-family:'Inter',sans-serif;
+            height:100vh;
+            overflow:hidden;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            transition:background 0.6s;
+        }
+        body.day-mode{
+            --bg:#e8f5e9;
+            --bg2:#f1f8e9;
+            --text:#1a1a2e;
+            --muted:#4b5563;
+            background:linear-gradient(135deg,#e8f5e9,#fce4ec);
+        }
+
+        /* ── Header ── */
+        #header{
+            position:fixed;top:0;left:0;right:0;
+            padding:12px 20px;
+            display:flex;align-items:center;justify-content:space-between;
+            background:linear-gradient(to bottom,rgba(10,10,15,0.95),transparent);
+            z-index:100;gap:10px;flex-wrap:wrap;
+        }
+        body.day-mode #header{background:linear-gradient(to bottom,rgba(232,245,233,0.95),transparent);}
+
+        #title{
+            font-family:'Playfair Display',serif;
+            font-size:1.15rem;
+            background:linear-gradient(135deg,var(--accent1),var(--accent2));
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+            white-space:nowrap;
+        }
+
+        .hbtn{
+            background:rgba(255,255,255,0.08);
+            border:1px solid rgba(255,255,255,0.13);
+            color:var(--text);padding:5px 12px;
+            border-radius:20px;cursor:pointer;font-size:0.75rem;
+            letter-spacing:0.03em;transition:background 0.2s;
+            font-family:'Inter',sans-serif;white-space:nowrap;
+        }
+        .hbtn:hover{background:rgba(255,255,255,0.16);}
+        .hbtn.active{background:rgba(34,197,94,0.25);border-color:rgba(34,197,94,0.5);}
+        body.day-mode .hbtn{background:rgba(0,0,0,0.07);border-color:rgba(0,0,0,0.15);color:var(--text);}
+
+        .hbtns{display:flex;gap:6px;flex-wrap:wrap;}
+
+        /* ── Theme buttons ── */
+        #themeBar{
+            position:fixed;top:52px;left:50%;transform:translateX(-50%);
+            display:flex;gap:8px;z-index:99;
+        }
+        .theme-dot{
+            width:28px;height:28px;border-radius:50%;cursor:pointer;
+            border:2px solid transparent;transition:transform 0.2s,border-color 0.2s;
+            box-shadow:0 2px 8px rgba(0,0,0,0.4);
+        }
+        .theme-dot:hover{transform:scale(1.15);}
+        .theme-dot.active{border-color:white;transform:scale(1.15);}
+        #dot-rose{background:radial-gradient(circle at 40% 35%,#fda4af,#e11d48);}
+        #dot-sunflower{background:radial-gradient(circle at 40% 35%,#fde68a,#f59e0b);}
+        #dot-lotus{background:radial-gradient(circle at 40% 35%,#c4b5fd,#7c3aed);}
+
+        /* ── Settings panel ── */
+        #settingsPanel{
+            position:fixed;top:56px;right:16px;
+            background:var(--bg2);border:1px solid rgba(255,255,255,0.1);
+            border-radius:14px;padding:16px 20px;z-index:200;
+            min-width:210px;display:none;
+            box-shadow:0 8px 32px rgba(0,0,0,0.6);
+        }
+        #settingsPanel.open{display:block;}
+        #settingsPanel h3{font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+        #cameraSelect{
+            width:100%;background:rgba(255,255,255,0.06);
+            border:1px solid rgba(255,255,255,0.1);color:var(--text);
+            padding:6px 10px;border-radius:8px;font-size:0.82rem;cursor:pointer;margin-bottom:10px;
+        }
+        .srow{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:0.8rem;color:var(--muted);}
+        .toggle{position:relative;width:34px;height:18px;}
+        .toggle input{opacity:0;width:0;height:0;}
+        .slider{position:absolute;inset:0;background:#374151;border-radius:20px;cursor:pointer;transition:0.2s;}
+        .slider::before{content:'';position:absolute;width:12px;height:12px;background:white;border-radius:50%;left:3px;top:3px;transition:0.2s;}
+        .toggle input:checked+.slider{background:var(--accent1);}
+        .toggle input:checked+.slider::before{transform:translateX(16px);}
+
+        /* ── Stage ── */
+        #stage{
+            position:relative;
+            width:min(640px,98vw);
+            height:min(480px,72vh);
+            border-radius:20px;overflow:hidden;
+            border:1px solid rgba(255,255,255,0.07);
+            box-shadow:0 0 60px rgba(34,197,94,0.1),0 0 120px rgba(244,114,182,0.06);
+        }
+        #webcam{
+            position:absolute;inset:0;width:100%;height:100%;
+            object-fit:cover;display:block;transform:scaleX(-1);
+            filter:brightness(1.25) contrast(1.1) saturate(1.5);
+            transition:filter 0.4s;
+        }
+        #blurOverlay{
+            position:absolute;inset:0;width:100%;height:100%;
+            backdrop-filter:blur(0px);transition:backdrop-filter 0.4s;
+            pointer-events:none;z-index:1;
+        }
+        #blurOverlay.active{backdrop-filter:blur(3px);}
+        #canvas{
+            position:absolute;inset:0;width:100%;height:100%;
+            transform:scaleX(-1);z-index:2;
+        }
+
+        /* ── Labels ── */
+        #labels{
+            position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+            display:flex;gap:12px;pointer-events:none;flex-wrap:wrap;justify-content:center;
+        }
+        .lchip{
+            padding:5px 12px;border-radius:20px;
+            font-size:0.68rem;letter-spacing:0.07em;text-transform:uppercase;font-weight:500;
+        }
+        .lright{background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);color:#4ade80;}
+        .lleft{background:rgba(244,114,182,0.15);border:1px solid rgba(244,114,182,0.4);color:#f9a8d4;}
+
+        /* ── Status ── */
+        #statusBar{
+            position:fixed;bottom:62px;left:50%;transform:translateX(-50%);
+            font-size:0.72rem;color:var(--muted);letter-spacing:0.05em;pointer-events:none;
+            white-space:nowrap;
+        }
+
+        /* ── Loading ── */
+        #loading{
+            position:fixed;inset:0;background:var(--bg);
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            z-index:999;gap:14px;transition:opacity 0.5s;
+        }
+        #loading.hidden{opacity:0;pointer-events:none;}
+        .spinner{width:38px;height:38px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--accent1);border-radius:50%;animation:spin 0.8s linear infinite;}
+        @keyframes spin{to{transform:rotate(360deg);}}
+        #loading p{color:var(--muted);font-size:0.83rem;}
+        #loading strong{font-family:'Playfair Display',serif;font-size:1.5rem;background:linear-gradient(135deg,#22c55e,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+        /* ── Petal rain (DOM particles) ── */
+        .dom-petal{
+            position:fixed;pointer-events:none;z-index:50;
+            font-size:1.2rem;animation:petalFall linear forwards;
+            opacity:0.85;
+        }
+        @keyframes petalFall{
+            0%{transform:translateY(-20px) rotate(0deg) scale(1);opacity:0.9;}
+            100%{transform:translateY(110vh) rotate(720deg) scale(0.4);opacity:0;}
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="header">
+    <span id="title">✦ Grow &amp; Bloom</span>
+    <div class="hbtns">
+        <button class="hbtn active" id="dayNightBtn" onclick="toggleDayNight()">🌙 Night</button>
+        <button class="hbtn active" id="soundBtn" onclick="toggleSound()">🔔 Sound On</button>
+        <button class="hbtn" onclick="toggleSettings()">⚙ Camera</button>
+    </div>
+</div>
+
+<!-- Theme dots -->
+<div id="themeBar">
+    <div class="theme-dot active" id="dot-rose" title="Rose" onclick="setTheme('rose')"></div>
+    <div class="theme-dot" id="dot-sunflower" title="Sunflower" onclick="setTheme('sunflower')"></div>
+    <div class="theme-dot" id="dot-lotus" title="Lotus" onclick="setTheme('lotus')"></div>
+</div>
+
+<!-- Settings -->
+<div id="settingsPanel">
+    <h3>Camera</h3>
+    <select id="cameraSelect"></select>
+    <div class="srow"><span>Mirror</span><label class="toggle"><input type="checkbox" id="mirrorT" checked><span class="slider"></span></label></div>
+    <div class="srow"><span>Cinematic blur</span><label class="toggle"><input type="checkbox" id="blurT" checked><span class="slider"></span></label></div>
+    <div class="srow"><span>Enhance colors</span><label class="toggle"><input type="checkbox" id="enhanceT" checked><span class="slider"></span></label></div>
+    <div class="srow"><span>Landmarks</span><label class="toggle"><input type="checkbox" id="landmarkT"><span class="slider"></span></label></div>
+</div>
+
+<!-- Stage -->
+<div id="stage">
+    <video id="webcam" autoplay playsinline muted></video>
+    <div id="blurOverlay" class="active"></div>
+    <canvas id="canvas"></canvas>
+</div>
+
+<!-- Labels -->
+<div id="labels">
+    <span class="lchip lright">✋ Right → Stem grows</span>
+    <span class="lchip lleft">🤚 Left → Flower blooms</span>
+</div>
+<div id="statusBar">Waiting for hands…</div>
+
+<!-- Loading -->
+<div id="loading">
+    <strong>Grow &amp; Bloom</strong>
+    <div class="spinner"></div>
+    <p>Loading MediaPipe Hands…</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script>
+    // ═══════════════════════════════════════════════════
+    //  DOM
+    // ═══════════════════════════════════════════════════
+    const video     = document.getElementById('webcam');
+    const canvas    = document.getElementById('canvas');
+    const ctx       = canvas.getContext('2d');
+    const loading   = document.getElementById('loading');
+    const statusBar = document.getElementById('statusBar');
+    const blurOverlay = document.getElementById('blurOverlay');
+    const cameraSelect= document.getElementById('cameraSelect');
+    const mirrorT   = document.getElementById('mirrorT');
+    const blurT     = document.getElementById('blurT');
+    const enhanceT  = document.getElementById('enhanceT');
+    const landmarkT = document.getElementById('landmarkT');
+
+    // ═══════════════════════════════════════════════════
+    //  THEMES
+    // ═══════════════════════════════════════════════════
+    const THEMES = {
+        rose:{
+            stemColor:'#16a34a', stemGlow:'#22c55e', stemCore:'#4ade80',
+            petalHues:[330,345,310,355,320,340],
+            petalSat:85, petalLight:68,
+            coreColor:'#fef9c3', coreGlow:'#fde68a',
+            groundGlow:'rgba(34,197,94,',
+            petalEmoji:['🌸','💮','🌺','🩷'],
+            leafColor:'#22c55e',
+        },
+        sunflower:{
+            stemColor:'#15803d', stemGlow:'#4ade80', stemCore:'#86efac',
+            petalHues:[40,50,35,55,42,48],
+            petalSat:95, petalLight:60,
+            coreColor:'#78350f', coreGlow:'#92400e',
+            groundGlow:'rgba(250,204,21,',
+            petalEmoji:['🌻','🌼','⭐','✨'],
+            leafColor:'#4ade80',
+        },
+        lotus:{
+            stemColor:'#6d28d9', stemGlow:'#a855f7', stemCore:'#c4b5fd',
+            petalHues:[280,260,300,270,285,295],
+            petalSat:80, petalLight:72,
+            coreColor:'#fce7f3', coreGlow:'#fbcfe8',
+            groundGlow:'rgba(168,85,247,',
+            petalEmoji:['🪷','💜','✨','🌙'],
+            leafColor:'#a855f7',
+        }
+    };
+    let currentTheme = 'rose';
+    let T = THEMES.rose;
+
+    function setTheme(name){
+        currentTheme = name;
+        T = THEMES[name];
+        document.querySelectorAll('.theme-dot').forEach(d=>d.classList.remove('active'));
+        document.getElementById('dot-'+name).classList.add('active');
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  DAY / NIGHT
+    // ═══════════════════════════════════════════════════
+    let dayMode = false;
+    function toggleDayNight(){
+        dayMode = !dayMode;
+        document.body.classList.toggle('day-mode', dayMode);
+        document.getElementById('dayNightBtn').textContent = dayMode ? '🌙 Night' : '☀️ Day';
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  SOUND
+    // ═══════════════════════════════════════════════════
+    let soundOn = true;
+    let audioCtx = null;
+    let lastChimeTime = 0;
+
+    function toggleSound(){
+        soundOn = !soundOn;
+        document.getElementById('soundBtn').textContent = soundOn ? '🔔 Sound On' : '🔕 Sound Off';
+    }
+
+    function getAudioCtx(){
+        if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+        return audioCtx;
+    }
+
+    function playChime(bloom){
+        if(!soundOn) return;
+        const now = Date.now();
+        if(now - lastChimeTime < 800) return;
+        lastChimeTime = now;
+        try{
+            const ac = getAudioCtx();
+            // Pick note based on bloom amount
+            const notes = [523.25, 659.25, 783.99, 1046.50, 880];
+            const freq = notes[Math.floor(bloom * (notes.length-1))];
+            const osc = ac.createOscillator();
+            const gain = ac.createGain();
+            const reverb = ac.createConvolver();
+
+            osc.connect(gain);
+            gain.connect(ac.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, ac.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(freq*1.5, ac.currentTime+0.15);
+
+            gain.gain.setValueAtTime(0, ac.currentTime);
+            gain.gain.linearRampToValueAtTime(0.18, ac.currentTime+0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+1.2);
+
+            osc.start(ac.currentTime);
+            osc.stop(ac.currentTime+1.2);
+
+            // harmonic
+            const osc2 = ac.createOscillator();
+            const g2 = ac.createGain();
+            osc2.connect(g2); g2.connect(ac.destination);
+            osc2.type='sine';
+            osc2.frequency.setValueAtTime(freq*2, ac.currentTime);
+            g2.gain.setValueAtTime(0,ac.currentTime);
+            g2.gain.linearRampToValueAtTime(0.07,ac.currentTime+0.04);
+            g2.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.8);
+            osc2.start(ac.currentTime); osc2.stop(ac.currentTime+0.8);
+        }catch(e){}
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  SETTINGS PANEL
+    // ═══════════════════════════════════════════════════
+    function toggleSettings(){
+        document.getElementById('settingsPanel').classList.toggle('open');
+    }
+    document.addEventListener('click',(e)=>{
+        if(!e.target.closest('#settingsPanel') && !e.target.closest('.hbtn'))
+            document.getElementById('settingsPanel').classList.remove('open');
+    });
+    mirrorT.addEventListener('change',()=>{
+        video.style.transform = mirrorT.checked?'scaleX(-1)':'scaleX(1)';
+        canvas.style.transform= mirrorT.checked?'scaleX(-1)':'scaleX(1)';
+    });
+    blurT.addEventListener('change',()=>{
+        blurOverlay.classList.toggle('active', blurT.checked);
+    });
+    enhanceT.addEventListener('change',()=>{
+        video.style.filter = enhanceT.checked
+            ?'brightness(1.25) contrast(1.1) saturate(1.5)':'none';
+    });
+
+    // ═══════════════════════════════════════════════════
+    //  CAMERA
+    // ═══════════════════════════════════════════════════
+    let mpCamera = null;
+
+    async function populateCameras(){
+        const devs = await navigator.mediaDevices.enumerateDevices();
+        const cams = devs.filter(d=>d.kind==='videoinput');
+        cameraSelect.innerHTML='';
+        cams.forEach((c,i)=>{
+            const o=document.createElement('option');
+            o.value=c.deviceId; o.text=c.label||`Camera ${i+1}`;
+            cameraSelect.appendChild(o);
+        });
+    }
+    cameraSelect.addEventListener('change',()=>startCamera(cameraSelect.value));
+
+    async function startCamera(deviceId){
+        if(mpCamera){mpCamera.stop();}
+        try{
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video:{
+                    deviceId:deviceId?{exact:deviceId}:undefined,
+                    width:{ideal:1280},height:{ideal:720},
+                    frameRate:{ideal:30}
+                },audio:false
+            });
+            video.srcObject=stream;
+            await populateCameras();
+            if(deviceId) cameraSelect.value=deviceId;
+            mpCamera=new Camera(video,{
+                onFrame:async()=>{await hands.send({image:video});},
+                width:640,height:480
+            });
+            mpCamera.start();
+        }catch(err){
+            document.querySelector('#loading p').textContent='Camera access denied!';
+            console.error(err);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  STATE — Two flowers
+    // ═══════════════════════════════════════════════════
+    // Flower 1 → right hand, Flower 2 → left hand (bloom only when stem exists)
+    let flower = [
+        {stemProg:0, bloomProg:0, smoothStem:0, smoothBloom:0, side:'right'},
+        {stemProg:0, bloomProg:0, smoothStem:0, smoothBloom:0, side:'left'},
+    ];
+
+    // ═══════════════════════════════════════════════════
+    //  PARTICLE RAIN
+    // ═══════════════════════════════════════════════════
+    const particles = [];
+
+    class Particle{
+        constructor(x,y,theme){
+            this.x=x; this.y=y;
+            this.vx=(Math.random()-0.5)*3;
+            this.vy=-Math.random()*4-2;
+            this.life=1;
+            this.decay=0.012+Math.random()*0.012;
+            this.r=Math.random()*5+3;
+            this.angle=Math.random()*Math.PI*2;
+            this.spin=(Math.random()-0.5)*0.15;
+            this.theme=theme;
+            this.type=Math.random()>0.4?'petal':'spark';
+        }
+        update(){
+            this.x+=this.vx;
+            this.vy+=0.08; // gravity
+            this.y+=this.vy;
+            this.angle+=this.spin;
+            this.life-=this.decay;
+            this.vx*=0.99;
+        }
+        draw(ctx){
+            if(this.life<=0) return;
+            ctx.save();
+            ctx.globalAlpha=this.life;
+            ctx.translate(this.x,this.y);
+            ctx.rotate(this.angle);
+            const t=THEMES[this.theme];
+            if(this.type==='petal'){
+                const hue=t.petalHues[Math.floor(Math.random()*t.petalHues.length)];
+                ctx.shadowColor=`hsl(${hue},${t.petalSat}%,${t.petalLight}%)`;
+                ctx.shadowBlur=8;
+                ctx.fillStyle=`hsl(${hue},${t.petalSat}%,${t.petalLight}%)`;
+                ctx.beginPath();
+                ctx.ellipse(0,0,this.r,this.r*0.5,0,0,Math.PI*2);
+                ctx.fill();
+            }else{
+                ctx.shadowColor=t.coreGlow;
+                ctx.shadowBlur=10;
+                ctx.fillStyle=t.coreColor;
+                ctx.beginPath();
+                ctx.arc(0,0,this.r*0.4,0,Math.PI*2);
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+    }
+
+    function spawnParticles(x,y,count,theme){
+        for(let i=0;i<count;i++) particles.push(new Particle(x,y,theme));
+    }
+
+    // DOM petal rain (falling from top)
+    let lastDomPetal=0;
+    function spawnDomPetal(bloom){
+        if(!soundOn && bloom<0.8) return;
+        const now=Date.now();
+        if(now-lastDomPetal < 400/bloom) return;
+        lastDomPetal=now;
+        const el=document.createElement('div');
+        el.className='dom-petal';
+        el.textContent=T.petalEmoji[Math.floor(Math.random()*T.petalEmoji.length)];
+        el.style.left=Math.random()*100+'vw';
+        el.style.top='-30px';
+        el.style.fontSize=(0.8+Math.random()*1.2)+'rem';
+        const dur=2+Math.random()*3;
+        el.style.animation=`petalFall ${dur}s linear forwards`;
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(), dur*1000);
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  CANVAS HELPERS
+    // ═══════════════════════════════════════════════════
+    function lerp(a,b,t){return a+(b-a)*t;}
+    function easeOut(t){return 1-Math.pow(1-t,3);}
+    function easeIn(t){return t*t*t;}
+
+    function resizeCanvas(){
+        const st=document.getElementById('stage');
+        canvas.width=st.clientWidth;
+        canvas.height=st.clientHeight;
+    }
+    window.addEventListener('resize',resizeCanvas);
+
+    // ═══════════════════════════════════════════════════
+    //  DRAW: POT
+    // ═══════════════════════════════════════════════════
+    function drawPot(cx,baseY,W){
+        const pw=W*0.14, ph=W*0.06;
+        const rimW=pw*1.15;
+
+        // shadow
+        ctx.save();
+        ctx.shadowColor='rgba(0,0,0,0.5)';
+        ctx.shadowBlur=20;
+        ctx.shadowOffsetY=8;
+
+        // pot body (trapezoid)
+        ctx.beginPath();
+        ctx.moveTo(cx-pw*0.75, baseY-ph);
+        ctx.lineTo(cx+pw*0.75, baseY-ph);
+        ctx.lineTo(cx+pw*0.55, baseY+ph*0.5);
+        ctx.lineTo(cx-pw*0.55, baseY+ph*0.5);
+        ctx.closePath();
+        const potGrad=ctx.createLinearGradient(cx-pw,baseY,cx+pw,baseY);
+        potGrad.addColorStop(0,'#92400e');
+        potGrad.addColorStop(0.4,'#b45309');
+        potGrad.addColorStop(0.7,'#d97706');
+        potGrad.addColorStop(1,'#92400e');
+        ctx.fillStyle=potGrad;
+        ctx.fill();
+
+        // rim
+        ctx.beginPath();
+        ctx.ellipse(cx, baseY-ph, rimW*0.5, ph*0.22, 0, 0, Math.PI*2);
+        ctx.fillStyle='#d97706';
+        ctx.fill();
+        ctx.strokeStyle='#fbbf24';
+        ctx.lineWidth=2;
+        ctx.stroke();
+
+        // soil
+        ctx.beginPath();
+        ctx.ellipse(cx, baseY-ph+2, rimW*0.42, ph*0.15, 0, 0, Math.PI*2);
+        ctx.fillStyle='#451a03';
+        ctx.fill();
+
+        // pot shine
+        ctx.beginPath();
+        ctx.ellipse(cx-pw*0.25, baseY-ph*0.4, pw*0.06, ph*0.25, -0.3, 0, Math.PI*2);
+        ctx.fillStyle='rgba(255,255,255,0.12)';
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  DRAW: STEM
+    // ═══════════════════════════════════════════════════
+    function drawStem(cx, baseY, tipY, progress, t, offset){
+        if(progress<=0.01) return;
+        const endY=baseY-(baseY-tipY)*progress;
+        const wave=Math.sin(t*0.002+offset)*10;
+        const mid=(baseY+endY)/2;
+
+        ctx.save();
+        // thick glow
+        ctx.shadowColor=T.stemGlow;
+        ctx.shadowBlur=28;
+        ctx.strokeStyle=T.stemColor;
+        ctx.lineWidth=7;
+        ctx.lineCap='round';
+        ctx.beginPath();
+        ctx.moveTo(cx,baseY);
+        ctx.quadraticCurveTo(cx+wave*1.5,mid,cx+wave,endY);
+        ctx.stroke();
+        // bright core
+        ctx.shadowBlur=12;
+        ctx.strokeStyle=T.stemCore;
+        ctx.lineWidth=2;
+        ctx.stroke();
+        ctx.restore();
+
+        // leaves
+        if(progress>0.4){
+            const leafAlpha=Math.min(1,(progress-0.4)/0.2);
+            drawLeaf(cx+wave*0.4,mid,leafAlpha,-0.5,t);
+        }
+        if(progress>0.65){
+            const leafAlpha=Math.min(1,(progress-0.65)/0.15);
+            drawLeaf(cx+wave*0.7,mid*0.65+endY*0.35,leafAlpha,0.5,t);
+        }
+    }
+
+    function drawLeaf(lx,ly,alpha,dir,t){
+        ctx.save();
+        ctx.globalAlpha=alpha;
+        ctx.shadowColor=T.stemGlow;
+        ctx.shadowBlur=16;
+        const sway=Math.sin(t*0.003)*0.08;
+        ctx.fillStyle=T.leafColor;
+        ctx.beginPath();
+        ctx.ellipse(lx+18*dir,ly,18,7,dir*(0.4+sway),0,Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle=T.stemCore;
+        ctx.globalAlpha=alpha*0.5;
+        ctx.beginPath();
+        ctx.ellipse(lx+14*dir,ly,9,3.5,dir*0.4,0,Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  DRAW: FLOWER
+    // ═══════════════════════════════════════════════════
+    let chimeBloom=[0,0];
+
+    function drawFlower(cx,cy,bloom,t,offset,flowerIdx){
+        if(bloom<=0.01) return;
+        const pCount=6;
+        const maxR=40*bloom;
+        const flicker=Math.sin(t*0.005+offset)*0.04;
+        const b=bloom+flicker;
+
+        // petals
+        for(let i=0;i<pCount;i++){
+            const angle=(i/pCount)*Math.PI*2+t*0.0008+offset;
+            const spread=0.5*b;
+            const px=cx+Math.cos(angle)*maxR*spread*2.2;
+            const py=cy+Math.sin(angle)*maxR*spread;
+            const hue=T.petalHues[i%T.petalHues.length];
+            const col=`hsl(${hue},${T.petalSat}%,${T.petalLight}%)`;
+            const glo=`hsl(${hue},100%,82%)`;
+
+            ctx.save();
+            ctx.shadowColor=glo;
+            ctx.shadowBlur=22*b;
+            ctx.fillStyle=col;
+            ctx.beginPath();
+            ctx.ellipse(
+                cx+(px-cx)*0.65, cy+(py-cy)*0.65,
+                maxR*0.58*b, maxR*0.3*b,
+                angle,0,Math.PI*2
+            );
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // centre glow
+        const coreR=10*b;
+        ctx.save();
+        ctx.shadowColor=T.coreGlow;
+        ctx.shadowBlur=35;
+        const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,coreR*1.6);
+        cg.addColorStop(0,T.coreColor);
+        cg.addColorStop(0.55,T.coreGlow);
+        cg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=cg;
+        ctx.beginPath();
+        ctx.arc(cx,cy,coreR*1.6,0,Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+
+        // sparkles
+        if(bloom>0.25){
+            for(let s=0;s<6;s++){
+                const sa=t*0.003+s*1.047+offset;
+                const sr=28+s*6+Math.sin(t*0.006+s)*7;
+                const sx=cx+Math.cos(sa)*sr*bloom;
+                const sy=cy+Math.sin(sa)*sr*bloom;
+                const al=(0.3+Math.sin(t*0.008+s)*0.3)*bloom;
+                const hue=T.petalHues[s%T.petalHues.length];
+                ctx.save();
+                ctx.globalAlpha=al;
+                ctx.shadowColor=`hsl(${hue},100%,80%)`;
+                ctx.shadowBlur=12;
+                ctx.fillStyle=`hsl(${hue},100%,80%)`;
+                ctx.beginPath();
+                ctx.arc(sx,sy,2.5,0,Math.PI*2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // spawn canvas particles when blooming
+        if(bloom>0.5 && Math.random()<0.15){
+            spawnParticles(cx,cy,3,currentTheme);
+        }
+
+        // chime trigger
+        const prev=chimeBloom[flowerIdx];
+        if(bloom>0.3 && Math.floor(bloom*5)>Math.floor(prev*5)){
+            playChime(bloom);
+            spawnDomPetal(bloom);
+        }
+        chimeBloom[flowerIdx]=bloom;
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  MAIN RENDER LOOP
+    // ═══════════════════════════════════════════════════
+    function drawFrame(t){
+        resizeCanvas();
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        const W=canvas.width, H=canvas.height;
+
+        // Two flower positions
+        const positions=[
+            {cx:W*0.38},
+            {cx:W*0.62},
+        ];
+        const baseY=H*0.88;
+        const tipY=H*0.12;
+
+        flower.forEach((f,i)=>{
+            const SPEED=0.07;
+            f.smoothStem =lerp(f.smoothStem,  f.stemProg,  SPEED);
+            f.smoothBloom=lerp(f.smoothBloom, f.bloomProg, SPEED);
+            const ease=easeOut(f.smoothStem);
+            const {cx}=positions[i];
+            const wave=Math.sin(t*0.002+i*1.5)*10;
+            const stemTopY=baseY-(baseY-tipY)*ease;
+            const stemTopX=cx+wave;
+
+            // pot
+            drawPot(cx, baseY+H*0.018, W);
+
+            // stem
+            drawStem(cx, baseY-H*0.018, tipY, ease, t, i*1.5);
+
+            // flower
+            if(ease>0.12){
+                const bEase=easeOut(f.smoothBloom)*Math.min(1,(ease-0.12)/0.2);
+                drawFlower(stemTopX, stemTopY, bEase, t, i*2.1, i);
+            }
+
+            // ground glow
+            ctx.save();
+            const gg=ctx.createRadialGradient(cx,baseY,0,cx,baseY,55);
+            gg.addColorStop(0,T.groundGlow+(0.28*ease)+')');
+            gg.addColorStop(1,T.groundGlow+'0)');
+            ctx.fillStyle=gg;
+            ctx.beginPath();
+            ctx.ellipse(cx,baseY,55,12,0,0,Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+        });
+
+        // particles
+        for(let i=particles.length-1;i>=0;i--){
+            particles[i].update();
+            particles[i].draw(ctx);
+            if(particles[i].life<=0) particles.splice(i,1);
+        }
+
+        requestAnimationFrame(drawFrame);
+    }
+    requestAnimationFrame(drawFrame);
+
+    // ═══════════════════════════════════════════════════
+    //  HAND OPENNESS
+    // ═══════════════════════════════════════════════════
+    function handOpenness(lms){
+        const tips=[8,12,16,20];
+        const bases=[5,9,13,17];
+        let sum=0;
+        tips.forEach((tip,i)=>{
+            const dx=lms[tip].x-lms[bases[i]].x;
+            const dy=lms[tip].y-lms[bases[i]].y;
+            sum+=Math.hypot(dx,dy);
+        });
+        return Math.min(1, (sum/4)*7);
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  MEDIAPIPE
+    // ═══════════════════════════════════════════════════
+    const hands=new Hands({
+        locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+    });
+    hands.setOptions({maxNumHands:2,modelComplexity:1,minDetectionConfidence:0.7,minTrackingConfidence:0.6});
+
+    let rightDetected=false, leftDetected=false;
+
+    hands.onResults((results)=>{
+        rightDetected=false; leftDetected=false;
+
+        if(results.multiHandLandmarks?.length){
+            results.multiHandLandmarks.forEach((lms,idx)=>{
+                const label=results.multiHandedness[idx].label;
+                const mirror=mirrorT.checked;
+                const isRight=mirror?(label==='Left'):(label==='Right');
+                const isLeft =mirror?(label==='Right'):(label==='Left');
+
+                if(isRight){
+                    rightDetected=true;
+                    const wristY=lms[0].y;
+                    // right hand controls flower[0] stem
+                    flower[0].stemProg=Math.max(0,Math.min(1,(0.82-wristY)/0.68));
+                    // right hand openness → bloom flower[0]
+                    flower[0].bloomProg=handOpenness(lms);
+                }
+                if(isLeft){
+                    leftDetected=true;
+                    const wristY=lms[0].y;
+                    // left hand controls flower[1] stem
+                    flower[1].stemProg=Math.max(0,Math.min(1,(0.82-wristY)/0.68));
+                    // left hand openness → bloom flower[1]
+                    flower[1].bloomProg=handOpenness(lms);
+                }
+
+                // landmarks
+                if(landmarkT.checked){
+                    const W=canvas.width, H=canvas.height;
+                    const col=isRight?'#22c55e':'#f472b6';
+                    lms.forEach(pt=>{
+                        ctx.save();
+                        ctx.shadowColor=col; ctx.shadowBlur=8;
+                        ctx.fillStyle=col;
+                        ctx.beginPath();
+                        ctx.arc((1-pt.x)*W,pt.y*H,4,0,Math.PI*2);
+                        ctx.fill();
+                        ctx.restore();
+                    });
+                }
+            });
+        }
+
+        if(!rightDetected){flower[0].stemProg=Math.max(0,flower[0].stemProg-0.01);flower[0].bloomProg=Math.max(0,flower[0].bloomProg-0.015);}
+        if(!leftDetected){flower[1].stemProg=Math.max(0,flower[1].stemProg-0.01);flower[1].bloomProg=Math.max(0,flower[1].bloomProg-0.015);}
+
+        const parts=[];
+        if(rightDetected) parts.push('✋ Right detected');
+        if(leftDetected)  parts.push('🤚 Left detected');
+        statusBar.textContent=parts.length?parts.join('  ·  '):'No hands detected — show your hands!';
+    });
+
+    async function init(){
+        try{
+            await startCamera(null);
+            loading.classList.add('hidden');
+            setTimeout(()=>loading.style.display='none',600);
+        }catch(e){
+            document.querySelector('#loading p').textContent='Camera access denied!';
+        }
+    }
+    init();
+</script>
+</body>
+</html>
