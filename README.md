@@ -19,6 +19,8 @@
 ---
 
 ## 📸 Preview
+<img width="1600" height="758" alt="WhatsApp Image 2026-07-06 at 12 50 26 PM" src="https://github.com/user-attachments/assets/469d2dde-b8b7-41b0-8e09-438a060af9be" />
+
 
 > Right hand raised → stem grows 🌱  
 > Open your palm → flower blooms 🌸  
