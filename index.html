@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grow & Bloom — Ultimate Edition</title>
+    <title>Grow & Bloom </title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
 
@@ -41,7 +41,7 @@
             background:linear-gradient(135deg,#e8f5e9,#fce4ec);
         }
 
-        /* ── Header ── */
+
         #header{
             position:fixed;top:0;left:0;right:0;
             padding:12px 20px;
@@ -73,7 +73,6 @@
 
         .hbtns{display:flex;gap:6px;flex-wrap:wrap;}
 
-        /* ── Theme buttons ── */
         #themeBar{
             position:fixed;top:52px;left:50%;transform:translateX(-50%);
             display:flex;gap:8px;z-index:99;
@@ -89,7 +88,6 @@
         #dot-sunflower{background:radial-gradient(circle at 40% 35%,#fde68a,#f59e0b);}
         #dot-lotus{background:radial-gradient(circle at 40% 35%,#c4b5fd,#7c3aed);}
 
-        /* ── Settings panel ── */
         #settingsPanel{
             position:fixed;top:56px;right:16px;
             background:var(--bg2);border:1px solid rgba(255,255,255,0.1);
@@ -112,7 +110,6 @@
         .toggle input:checked+.slider{background:var(--accent1);}
         .toggle input:checked+.slider::before{transform:translateX(16px);}
 
-        /* ── Stage ── */
         #stage{
             position:relative;
             width:min(640px,98vw);
@@ -138,7 +135,6 @@
             transform:scaleX(-1);z-index:2;
         }
 
-        /* ── Labels ── */
         #labels{
             position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
             display:flex;gap:12px;pointer-events:none;flex-wrap:wrap;justify-content:center;
@@ -150,14 +146,12 @@
         .lright{background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);color:#4ade80;}
         .lleft{background:rgba(244,114,182,0.15);border:1px solid rgba(244,114,182,0.4);color:#f9a8d4;}
 
-        /* ── Status ── */
         #statusBar{
             position:fixed;bottom:62px;left:50%;transform:translateX(-50%);
             font-size:0.72rem;color:var(--muted);letter-spacing:0.05em;pointer-events:none;
             white-space:nowrap;
         }
 
-        /* ── Loading ── */
         #loading{
             position:fixed;inset:0;background:var(--bg);
             display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -169,7 +163,6 @@
         #loading p{color:var(--muted);font-size:0.83rem;}
         #loading strong{font-family:'Playfair Display',serif;font-size:1.5rem;background:linear-gradient(135deg,#22c55e,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 
-        /* ── Petal rain (DOM particles) ── */
         .dom-petal{
             position:fixed;pointer-events:none;z-index:50;
             font-size:1.2rem;animation:petalFall linear forwards;
@@ -183,7 +176,6 @@
 </head>
 <body>
 
-<!-- Header -->
 <div id="header">
     <span id="title">✦ Grow &amp; Bloom</span>
     <div class="hbtns">
@@ -193,14 +185,12 @@
     </div>
 </div>
 
-<!-- Theme dots -->
 <div id="themeBar">
     <div class="theme-dot active" id="dot-rose" title="Rose" onclick="setTheme('rose')"></div>
     <div class="theme-dot" id="dot-sunflower" title="Sunflower" onclick="setTheme('sunflower')"></div>
     <div class="theme-dot" id="dot-lotus" title="Lotus" onclick="setTheme('lotus')"></div>
 </div>
 
-<!-- Settings -->
 <div id="settingsPanel">
     <h3>Camera</h3>
     <select id="cameraSelect"></select>
@@ -210,21 +200,18 @@
     <div class="srow"><span>Landmarks</span><label class="toggle"><input type="checkbox" id="landmarkT"><span class="slider"></span></label></div>
 </div>
 
-<!-- Stage -->
 <div id="stage">
     <video id="webcam" autoplay playsinline muted></video>
     <div id="blurOverlay" class="active"></div>
     <canvas id="canvas"></canvas>
 </div>
 
-<!-- Labels -->
 <div id="labels">
     <span class="lchip lright">✋ Right → Stem grows</span>
     <span class="lchip lleft">🤚 Left → Flower blooms</span>
 </div>
 <div id="statusBar">Waiting for hands…</div>
 
-<!-- Loading -->
 <div id="loading">
     <strong>Grow &amp; Bloom</strong>
     <div class="spinner"></div>
@@ -235,9 +222,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 <script>
-    // ═══════════════════════════════════════════════════
-    //  DOM
-    // ═══════════════════════════════════════════════════
+
     const video     = document.getElementById('webcam');
     const canvas    = document.getElementById('canvas');
     const ctx       = canvas.getContext('2d');
@@ -250,9 +235,7 @@
     const enhanceT  = document.getElementById('enhanceT');
     const landmarkT = document.getElementById('landmarkT');
 
-    // ═══════════════════════════════════════════════════
-    //  THEMES
-    // ═══════════════════════════════════════════════════
+
     const THEMES = {
         rose:{
             stemColor:'#16a34a', stemGlow:'#22c55e', stemCore:'#4ade80',
@@ -292,9 +275,7 @@
         document.getElementById('dot-'+name).classList.add('active');
     }
 
-    // ═══════════════════════════════════════════════════
-    //  DAY / NIGHT
-    // ═══════════════════════════════════════════════════
+
     let dayMode = false;
     function toggleDayNight(){
         dayMode = !dayMode;
@@ -302,9 +283,7 @@
         document.getElementById('dayNightBtn').textContent = dayMode ? '🌙 Night' : '☀️ Day';
     }
 
-    // ═══════════════════════════════════════════════════
-    //  SOUND
-    // ═══════════════════════════════════════════════════
+
     let soundOn = true;
     let audioCtx = null;
     let lastChimeTime = 0;
@@ -326,7 +305,7 @@
         lastChimeTime = now;
         try{
             const ac = getAudioCtx();
-            // Pick note based on bloom amount
+         
             const notes = [523.25, 659.25, 783.99, 1046.50, 880];
             const freq = notes[Math.floor(bloom * (notes.length-1))];
             const osc = ac.createOscillator();
@@ -346,7 +325,7 @@
             osc.start(ac.currentTime);
             osc.stop(ac.currentTime+1.2);
 
-            // harmonic
+      
             const osc2 = ac.createOscillator();
             const g2 = ac.createGain();
             osc2.connect(g2); g2.connect(ac.destination);
@@ -359,9 +338,6 @@
         }catch(e){}
     }
 
-    // ═══════════════════════════════════════════════════
-    //  SETTINGS PANEL
-    // ═══════════════════════════════════════════════════
     function toggleSettings(){
         document.getElementById('settingsPanel').classList.toggle('open');
     }
@@ -381,9 +357,6 @@
             ?'brightness(1.25) contrast(1.1) saturate(1.5)':'none';
     });
 
-    // ═══════════════════════════════════════════════════
-    //  CAMERA
-    // ═══════════════════════════════════════════════════
     let mpCamera = null;
 
     async function populateCameras(){
@@ -422,18 +395,12 @@
         }
     }
 
-    // ═══════════════════════════════════════════════════
-    //  STATE — Two flowers
-    // ═══════════════════════════════════════════════════
-    // Flower 1 → right hand, Flower 2 → left hand (bloom only when stem exists)
+
     let flower = [
         {stemProg:0, bloomProg:0, smoothStem:0, smoothBloom:0, side:'right'},
         {stemProg:0, bloomProg:0, smoothStem:0, smoothBloom:0, side:'left'},
     ];
 
-    // ═══════════════════════════════════════════════════
-    //  PARTICLE RAIN
-    // ═══════════════════════════════════════════════════
     const particles = [];
 
     class Particle{
@@ -488,7 +455,7 @@
         for(let i=0;i<count;i++) particles.push(new Particle(x,y,theme));
     }
 
-    // DOM petal rain (falling from top)
+ 
     let lastDomPetal=0;
     function spawnDomPetal(bloom){
         if(!soundOn && bloom<0.8) return;
@@ -507,9 +474,7 @@
         setTimeout(()=>el.remove(), dur*1000);
     }
 
-    // ═══════════════════════════════════════════════════
-    //  CANVAS HELPERS
-    // ═══════════════════════════════════════════════════
+
     function lerp(a,b,t){return a+(b-a)*t;}
     function easeOut(t){return 1-Math.pow(1-t,3);}
     function easeIn(t){return t*t*t;}
@@ -521,20 +486,18 @@
     }
     window.addEventListener('resize',resizeCanvas);
 
-    // ═══════════════════════════════════════════════════
-    //  DRAW: POT
-    // ═══════════════════════════════════════════════════
+  
     function drawPot(cx,baseY,W){
         const pw=W*0.14, ph=W*0.06;
         const rimW=pw*1.15;
 
-        // shadow
+      
         ctx.save();
         ctx.shadowColor='rgba(0,0,0,0.5)';
         ctx.shadowBlur=20;
         ctx.shadowOffsetY=8;
 
-        // pot body (trapezoid)
+  
         ctx.beginPath();
         ctx.moveTo(cx-pw*0.75, baseY-ph);
         ctx.lineTo(cx+pw*0.75, baseY-ph);
@@ -549,7 +512,7 @@
         ctx.fillStyle=potGrad;
         ctx.fill();
 
-        // rim
+ 
         ctx.beginPath();
         ctx.ellipse(cx, baseY-ph, rimW*0.5, ph*0.22, 0, 0, Math.PI*2);
         ctx.fillStyle='#d97706';
@@ -558,13 +521,13 @@
         ctx.lineWidth=2;
         ctx.stroke();
 
-        // soil
+
         ctx.beginPath();
         ctx.ellipse(cx, baseY-ph+2, rimW*0.42, ph*0.15, 0, 0, Math.PI*2);
         ctx.fillStyle='#451a03';
         ctx.fill();
 
-        // pot shine
+    
         ctx.beginPath();
         ctx.ellipse(cx-pw*0.25, baseY-ph*0.4, pw*0.06, ph*0.25, -0.3, 0, Math.PI*2);
         ctx.fillStyle='rgba(255,255,255,0.12)';
@@ -573,9 +536,7 @@
         ctx.restore();
     }
 
-    // ═══════════════════════════════════════════════════
-    //  DRAW: STEM
-    // ═══════════════════════════════════════════════════
+
     function drawStem(cx, baseY, tipY, progress, t, offset){
         if(progress<=0.01) return;
         const endY=baseY-(baseY-tipY)*progress;
@@ -583,7 +544,7 @@
         const mid=(baseY+endY)/2;
 
         ctx.save();
-        // thick glow
+  
         ctx.shadowColor=T.stemGlow;
         ctx.shadowBlur=28;
         ctx.strokeStyle=T.stemColor;
@@ -593,14 +554,13 @@
         ctx.moveTo(cx,baseY);
         ctx.quadraticCurveTo(cx+wave*1.5,mid,cx+wave,endY);
         ctx.stroke();
-        // bright core
+
         ctx.shadowBlur=12;
         ctx.strokeStyle=T.stemCore;
         ctx.lineWidth=2;
         ctx.stroke();
         ctx.restore();
 
-        // leaves
         if(progress>0.4){
             const leafAlpha=Math.min(1,(progress-0.4)/0.2);
             drawLeaf(cx+wave*0.4,mid,leafAlpha,-0.5,t);
@@ -629,9 +589,7 @@
         ctx.restore();
     }
 
-    // ═══════════════════════════════════════════════════
-    //  DRAW: FLOWER
-    // ═══════════════════════════════════════════════════
+
     let chimeBloom=[0,0];
 
     function drawFlower(cx,cy,bloom,t,offset,flowerIdx){
@@ -641,7 +599,6 @@
         const flicker=Math.sin(t*0.005+offset)*0.04;
         const b=bloom+flicker;
 
-        // petals
         for(let i=0;i<pCount;i++){
             const angle=(i/pCount)*Math.PI*2+t*0.0008+offset;
             const spread=0.5*b;
@@ -665,7 +622,7 @@
             ctx.restore();
         }
 
-        // centre glow
+ 
         const coreR=10*b;
         ctx.save();
         ctx.shadowColor=T.coreGlow;
@@ -680,7 +637,7 @@
         ctx.fill();
         ctx.restore();
 
-        // sparkles
+    
         if(bloom>0.25){
             for(let s=0;s<6;s++){
                 const sa=t*0.003+s*1.047+offset;
@@ -701,12 +658,10 @@
             }
         }
 
-        // spawn canvas particles when blooming
         if(bloom>0.5 && Math.random()<0.15){
             spawnParticles(cx,cy,3,currentTheme);
         }
 
-        // chime trigger
         const prev=chimeBloom[flowerIdx];
         if(bloom>0.3 && Math.floor(bloom*5)>Math.floor(prev*5)){
             playChime(bloom);
@@ -715,15 +670,12 @@
         chimeBloom[flowerIdx]=bloom;
     }
 
-    // ═══════════════════════════════════════════════════
-    //  MAIN RENDER LOOP
-    // ═══════════════════════════════════════════════════
+
     function drawFrame(t){
         resizeCanvas();
         ctx.clearRect(0,0,canvas.width,canvas.height);
         const W=canvas.width, H=canvas.height;
 
-        // Two flower positions
         const positions=[
             {cx:W*0.38},
             {cx:W*0.62},
@@ -741,19 +693,19 @@
             const stemTopY=baseY-(baseY-tipY)*ease;
             const stemTopX=cx+wave;
 
-            // pot
+         
             drawPot(cx, baseY+H*0.018, W);
 
-            // stem
+        
             drawStem(cx, baseY-H*0.018, tipY, ease, t, i*1.5);
 
-            // flower
+        
             if(ease>0.12){
                 const bEase=easeOut(f.smoothBloom)*Math.min(1,(ease-0.12)/0.2);
                 drawFlower(stemTopX, stemTopY, bEase, t, i*2.1, i);
             }
 
-            // ground glow
+          
             ctx.save();
             const gg=ctx.createRadialGradient(cx,baseY,0,cx,baseY,55);
             gg.addColorStop(0,T.groundGlow+(0.28*ease)+')');
@@ -765,7 +717,6 @@
             ctx.restore();
         });
 
-        // particles
         for(let i=particles.length-1;i>=0;i--){
             particles[i].update();
             particles[i].draw(ctx);
@@ -776,9 +727,7 @@
     }
     requestAnimationFrame(drawFrame);
 
-    // ═══════════════════════════════════════════════════
-    //  HAND OPENNESS
-    // ═══════════════════════════════════════════════════
+
     function handOpenness(lms){
         const tips=[8,12,16,20];
         const bases=[5,9,13,17];
@@ -791,9 +740,7 @@
         return Math.min(1, (sum/4)*7);
     }
 
-    // ═══════════════════════════════════════════════════
-    //  MEDIAPIPE
-    // ═══════════════════════════════════════════════════
+
     const hands=new Hands({
         locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
     });
@@ -814,21 +761,21 @@
                 if(isRight){
                     rightDetected=true;
                     const wristY=lms[0].y;
-                    // right hand controls flower[0] stem
+            
                     flower[0].stemProg=Math.max(0,Math.min(1,(0.82-wristY)/0.68));
-                    // right hand openness → bloom flower[0]
+               
                     flower[0].bloomProg=handOpenness(lms);
                 }
                 if(isLeft){
                     leftDetected=true;
                     const wristY=lms[0].y;
-                    // left hand controls flower[1] stem
+              
                     flower[1].stemProg=Math.max(0,Math.min(1,(0.82-wristY)/0.68));
-                    // left hand openness → bloom flower[1]
+        
                     flower[1].bloomProg=handOpenness(lms);
                 }
 
-                // landmarks
+      
                 if(landmarkT.checked){
                     const W=canvas.width, H=canvas.height;
                     const col=isRight?'#22c55e':'#f472b6';
