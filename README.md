@@ -12,7 +12,7 @@
 
 **A real-time webcam-based hand tracking app where your hands grow and bloom flowers — built with MediaPipe Hands & Canvas API.**
 
-[🌐 Live Demo](#) · [🐛 Report Bug](../../issues) · [✨ Request Feature](../../issues)
+[🌐 Live Demo](https://rafiul254.github.io/Grow-and-Bloom/) · [🐛 Report Bug](../../issues) · [✨ Request Feature](../../issues)
 
 </div>
 
